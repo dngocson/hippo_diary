@@ -9,21 +9,8 @@ import BottomSheet, {
   BottomSheetFlatList,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
-
-const months = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
+import { useThemeColor } from "../Themed";
+import { dayNames, monthNames } from "@/constants/Variable";
 
 export default function DiaryCalendar() {
   const bottomSheetRef = useRef<BottomSheet>(null);
@@ -51,62 +38,172 @@ export default function DiaryCalendar() {
     closeMonthPicker();
   };
 
+  const calendarColor = useThemeColor({}, "calendar");
+  const textColor = useThemeColor({}, "text");
+  const primaryColor = useThemeColor({}, "primary");
+  const secondaryText = useThemeColor({}, "secondaryText");
+  const borderColor = useThemeColor({}, "border");
+  const iconColor = useThemeColor({}, "icon");
+  const tint = useThemeColor({}, "tint");
+
   return (
     <>
-      <View className="bg-white rounded-[40px] px-5 pt-4 pb-8">
+      <View
+        style={{
+          backgroundColor: calendarColor,
+          borderRadius: 40,
+          paddingHorizontal: 20,
+          paddingTop: 16,
+          paddingBottom: 32,
+        }}
+      >
         {/* Header */}
-        <View className="flex-row items-center justify-between mb-5">
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 20,
+            backgroundColor: "transparent",
+          }}
+        >
           {/* LEFT */}
-          <View className="flex-row items-center">
-            <View className="w-11 h-11 rounded-xl bg-[#F7F4F2] items-center justify-center mr-3">
-              <Ionicons name="calendar-outline" size={22} color="#8B7568" />
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              backgroundColor: "transparent",
+            }}
+          >
+            {/* Calendar Icon */}
+            <View
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 16,
+                backgroundColor: borderColor,
+                alignItems: "center",
+                justifyContent: "center",
+                marginRight: 12,
+              }}
+            >
+              <Ionicons name="calendar-outline" size={22} color={iconColor} />
             </View>
 
+            {/* Month Picker */}
             <TouchableOpacity
               onPress={openMonthPicker}
-              className="flex-row items-center"
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+              }}
             >
-              <Text className="text-[18px] font-semibold text-[#2D201B]">
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontWeight: "700",
+                  color: primaryColor,
+                }}
+              >
                 {format(currentMonth, "MMMM yyyy")}
               </Text>
 
               <Ionicons
                 name="chevron-down"
                 size={18}
-                color="#8B7568"
+                color={iconColor}
                 style={{ marginLeft: 4 }}
               />
             </TouchableOpacity>
           </View>
 
-          {/* RIGHT */}
-          <View className="flex-row">
+          {/* RIGHT NAV */}
+          <View
+            style={{
+              flexDirection: "row",
+              backgroundColor: "transparent",
+            }}
+          >
             <TouchableOpacity
               onPress={() => setCurrentMonth((prev) => subMonths(prev, 1))}
-              className="w-10 h-10 items-center justify-center"
+              style={{
+                width: 40,
+                height: 40,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
             >
-              <Ionicons name="chevron-back" size={22} color="#B29380" />
+              <Ionicons name="chevron-back" size={22} color={tint} />
             </TouchableOpacity>
 
             <TouchableOpacity
               onPress={() => setCurrentMonth((prev) => addMonths(prev, 1))}
-              className="w-10 h-10 items-center justify-center"
+              style={{
+                width: 40,
+                height: 40,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
             >
-              <Ionicons name="chevron-forward" size={22} color="#B29380" />
+              <Ionicons name="chevron-forward" size={22} color={tint} />
             </TouchableOpacity>
           </View>
         </View>
 
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-around",
+            marginBottom: 6,
+            backgroundColor: "transparent",
+          }}
+        >
+          {dayNames.map((day) => (
+            <Text
+              key={day}
+              style={{
+                width: 36,
+                textAlign: "center",
+                fontSize: 13,
+                fontWeight: "600",
+                color: secondaryText,
+              }}
+            >
+              {day}
+            </Text>
+          ))}
+        </View>
+
+        {/* Calendar */}
         <Calendar
           current={format(currentMonth, "yyyy-MM-dd")}
+          key={format(currentMonth, "yyyy-MM")}
           hideArrows
+          firstDay={1}
           headerStyle={{ display: "none" }}
           onDayPress={(day) => setSelectedDate(day.dateString)}
           markedDates={{
             [selectedDate]: {
               selected: true,
-              selectedColor: "#F2E2D5",
+              selectedColor: tint,
             },
+          }}
+          theme={{
+            backgroundColor: calendarColor,
+            calendarBackground: calendarColor,
+            textSectionTitleColor: secondaryText,
+            dayTextColor: textColor,
+            monthTextColor: primaryColor,
+            todayTextColor: tint,
+            selectedDayBackgroundColor: tint,
+            selectedDayTextColor: "#fff",
+            textDisabledColor: secondaryText,
+            arrowColor: tint,
+            indicatorColor: tint,
+            textDayFontWeight: "500",
+            textMonthFontWeight: "700",
+            textDayHeaderFontSize: 13,
+            textDayHeaderFontWeight: "600", //
           }}
         />
       </View>
@@ -130,7 +227,7 @@ export default function DiaryCalendar() {
         </BottomSheetView>
 
         <BottomSheetFlatList
-          data={months}
+          data={monthNames}
           keyExtractor={(item) => item}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 40 }}

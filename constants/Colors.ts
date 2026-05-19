@@ -4,8 +4,8 @@ const tintColorDark = "#C49A7A";
 export const Colors = {
   light: {
     // Base
-    text: "#3B2F2A",
-    background: "#F8F5F1",
+    text: "#6D5145",
+    background: "#fbf8f4",
     tint: tintColorLight,
 
     // Icons & Tabs
@@ -15,7 +15,7 @@ export const Colors = {
 
     // Diary UI
     card: "#F3E7DB", // quote card / recent entry
-    calendar: "#F7F4F1", // calendar panel
+    calendar: "#fdfdfd", // calendar panel
     primary: "#6D5145", // title / heading
     secondaryText: "#9B8B81",
     button: "#C9A185", // floating action button
