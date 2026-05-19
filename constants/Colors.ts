@@ -1,26 +1,38 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
-
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+const tintColorLight = "#A87757";
+const tintColorDark = "#D6B59A";
 
 export const Colors = {
   light: {
-    text: '#11181C',
-    background: '#fff',
+    text: "#2C2522",
+    background: "#FAF7F3",
     tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
+    icon: "#A27B67",
+    tabIconDefault: "#B9A89B",
     tabIconSelected: tintColorLight,
+
+    // Diary UI
+    card: "#F2E6DA",
+    calendar: "#E5D2C1",
+    primary: "#7A5C4D",
+    secondaryText: "#A59083",
+    button: "#A87757",
+    border: "#EFE3D8",
   },
+
   dark: {
-    text: '#ECEDEE',
-    background: '#151718',
+    text: "#F5ECE5",
+    background: "#181719",
     tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
+    icon: "#D2BBAA",
+    tabIconDefault: "#7D736C",
     tabIconSelected: tintColorDark,
+
+    // Diary UI dark
+    card: "#2A2624",
+    calendar: "#332D2A",
+    primary: "#E6D5C8",
+    secondaryText: "#B7AAA1",
+    button: "#C49A7A",
+    border: "#3B3431",
   },
 };
