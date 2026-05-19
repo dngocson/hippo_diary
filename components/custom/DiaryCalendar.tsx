@@ -1,10 +1,14 @@
 import React, { useMemo, useRef, useState, useCallback } from "react";
-import { View, Text, TouchableOpacity, FlatList } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { Calendar } from "react-native-calendars";
-import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
+
 import { Ionicons } from "@expo/vector-icons";
 
 import { addMonths, subMonths, format, setMonth } from "date-fns";
+import BottomSheet, {
+  BottomSheetFlatList,
+  BottomSheetView,
+} from "@gorhom/bottom-sheet";
 
 const months = [
   "January",
@@ -118,39 +122,38 @@ export default function DiaryCalendar() {
           borderTopRightRadius: 30,
         }}
       >
-        <BottomSheetView className="px-6">
-          <Text className="text-[20px] font-semibold mb-5 text-center">
+        {/* Title nằm ngoài FlatList */}
+        <BottomSheetView style={{ paddingHorizontal: 24, paddingBottom: 8 }}>
+          <Text className="text-[20px] font-semibold text-center">
             Select Month
           </Text>
+        </BottomSheetView>
 
-          <FlatList
-            data={months}
-            keyExtractor={(item) => item}
-            showsVerticalScrollIndicator={false}
-            renderItem={({ item, index }) => {
-              const selected = currentMonth.getMonth() === index;
-
-              return (
-                <TouchableOpacity
-                  onPress={() => selectMonth(index)}
-                  className={`py-4 px-5 rounded-2xl mb-2 ${
-                    selected ? "bg-[#F2E2D5]" : "bg-[#F7F4F2]"
+        <BottomSheetFlatList
+          data={months}
+          keyExtractor={(item) => item}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 40 }}
+          renderItem={({ item, index }) => {
+            const selected = currentMonth.getMonth() === index;
+            return (
+              <TouchableOpacity
+                onPress={() => selectMonth(index)}
+                className={`py-4 px-5 rounded-2xl mb-2 ${
+                  selected ? "bg-[#F2E2D5]" : "bg-[#F7F4F2]"
+                }`}
+              >
+                <Text
+                  className={`text-[18px] ${
+                    selected ? "font-semibold text-[#2D201B]" : "text-[#7D6E65]"
                   }`}
                 >
-                  <Text
-                    className={`text-[18px] ${
-                      selected
-                        ? "font-semibold text-[#2D201B]"
-                        : "text-[#7D6E65]"
-                    }`}
-                  >
-                    {item}
-                  </Text>
-                </TouchableOpacity>
-              );
-            }}
-          />
-        </BottomSheetView>
+                  {item}
+                </Text>
+              </TouchableOpacity>
+            );
+          }}
+        />
       </BottomSheet>
     </>
   );
