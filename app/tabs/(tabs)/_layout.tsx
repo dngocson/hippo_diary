@@ -23,24 +23,13 @@ export default function TabLayout() {
         tabBarActiveTintColor: tabIconSelected,
         tabBarInactiveTintColor: tabIconDefault,
         tabBarStyle: {
-          position: "absolute",
-          bottom: 24,
-          left: 0,
-          right: 0,
-          marginHorizontal: screenWidth * 0.04,
-          height: 72,
-          borderRadius: 40,
           backgroundColor: background,
-          borderWidth: 1,
           borderColor: border,
-          borderTopWidth: 1,
-          paddingTop: 10,
           paddingBottom: 8,
-          shadowColor: "#000",
           shadowOffset: { width: 0, height: 8 },
           shadowOpacity: 0.08,
           shadowRadius: 24,
-          elevation: 12,
+          elevation: 1,
         },
         tabBarLabelStyle: {
           fontSize: 10,
@@ -74,13 +63,13 @@ export default function TabLayout() {
           tabBarIcon: () => (
             <View
               style={{
-                width: 52,
-                height: 52,
-                borderRadius: 26,
+                width: 60,
+                height: 60,
+                borderRadius: 30,
                 backgroundColor: button,
                 alignItems: "center",
                 justifyContent: "center",
-                marginBottom: 28,
+                top: -15,
                 shadowColor: button,
                 shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: 0.35,
@@ -88,9 +77,14 @@ export default function TabLayout() {
                 elevation: 8,
               }}
             >
-              <Ionicons name="pencil" size={22} color="#fff" />
+              <Ionicons name="pencil" size={30} color="#fff" />
             </View>
           ),
+
+          tabBarItemStyle: {
+            justifyContent: "center",
+            alignItems: "center",
+          },
         }}
         listeners={{
           tabPress: (e) => {

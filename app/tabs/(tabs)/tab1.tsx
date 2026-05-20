@@ -9,11 +9,7 @@ import DiaryCalendar from "@/components/custom/DiaryCalendar";
 export default function DiaryTab() {
   return (
     <View className="flex-1">
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 30, paddingTop: 30 }}
-        nestedScrollEnabled
-      >
+      <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled>
         <DiaryHeader />
         <QuickNote />
         <RecentEntries />

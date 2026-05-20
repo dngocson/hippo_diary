@@ -202,10 +202,12 @@ export default function DiaryCalendar() {
           onDayPress={(day) => {
             setSelectedDate(day.dateString);
           }}
+          markingType={"period"}
           markedDates={{
             [selectedDate]: {
               selected: true,
-              selectedColor: tint,
+              color: "#50cebb",
+              textColor: "white",
             },
           }}
           theme={{
