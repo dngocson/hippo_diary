@@ -15,6 +15,10 @@ import { StatusBar } from "expo-status-bar";
 import { Fab, FabIcon } from "@/components/ui/fab";
 import { MoonIcon, SunIcon, SlashIcon } from "@/components/ui/icon";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import {
+  ModalProvider,
+  useModalContext,
+} from "@/components/custom/ModalContext";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -44,7 +48,6 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
-  const pathname = usePathname();
   const systemColorScheme = useColorScheme();
   const [mode, setMode] = useState<"system" | "light" | "dark">("system");
 
@@ -64,26 +67,51 @@ function RootLayoutNav() {
 
   return (
     <GestureHandlerRootView>
-      <GluestackUIProvider mode={mode}>
-        <ThemeProvider
-          value={effectiveColorScheme === "dark" ? DarkTheme : DefaultTheme}
-        >
-          <Slot />
-          {pathname === "/" && (
-            <Fab onPress={handleToggleTheme} className="m-6" size="lg">
-              <FabIcon
-                as={
-                  mode === "system"
-                    ? SlashIcon
-                    : effectiveColorScheme === "dark"
-                      ? MoonIcon
-                      : SunIcon
-                }
-              />
-            </Fab>
-          )}
-        </ThemeProvider>
-      </GluestackUIProvider>
+      <ModalProvider>
+        <GluestackUIProvider mode={mode}>
+          <ThemeProvider
+            value={effectiveColorScheme === "dark" ? DarkTheme : DefaultTheme}
+          >
+            <RootLayoutContent
+              mode={mode}
+              handleToggleTheme={handleToggleTheme}
+              effectiveColorScheme={effectiveColorScheme}
+            />
+          </ThemeProvider>
+        </GluestackUIProvider>
+      </ModalProvider>
     </GestureHandlerRootView>
+  );
+}
+
+function RootLayoutContent({
+  mode,
+  handleToggleTheme,
+  effectiveColorScheme,
+}: {
+  mode: "system" | "light" | "dark";
+  handleToggleTheme: () => void;
+  effectiveColorScheme: "light" | "dark";
+}) {
+  const pathname = usePathname();
+  const { isAnyModalOpen } = useModalContext();
+
+  return (
+    <>
+      <Slot />
+      {pathname === "/" && !isAnyModalOpen && (
+        <Fab onPress={handleToggleTheme} className="m-6" size="lg">
+          <FabIcon
+            as={
+              mode === "system"
+                ? SlashIcon
+                : effectiveColorScheme === "dark"
+                  ? MoonIcon
+                  : SunIcon
+            }
+          />
+        </Fab>
+      )}
+    </>
   );
 }

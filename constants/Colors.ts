@@ -20,6 +20,8 @@ export const Colors = {
     secondaryText: "#9B8B81",
     button: "#C9A185", // floating action button
     border: "#ECE3DA",
+    todayTextColor: "#22c55e",
+    normalDayTextColor: "#262626",
 
     // Extra
     input: "#FFFFFF",
@@ -44,6 +46,8 @@ export const Colors = {
     secondaryText: "#B4A89F",
     button: "#9A6C4D", // FAB brown
     border: "#2A2A30",
+    todayTextColor: "#c026d3",
+    normalDayTextColor: "#B4A89F",
 
     // Extra
     input: "#1B1C21",

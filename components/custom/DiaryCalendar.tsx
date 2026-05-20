@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState, useCallback } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, useColorScheme } from "react-native";
 import { Calendar } from "react-native-calendars";
 
 import { Ionicons } from "@expo/vector-icons";
@@ -9,7 +9,7 @@ import BottomSheet, {
   BottomSheetFlatList,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
-import { useThemeColor } from "../Themed";
+import { useThemeColors } from "../Themed";
 import { dayNames, monthNames } from "@/constants/Variable";
 
 export default function DiaryCalendar() {
@@ -38,13 +38,28 @@ export default function DiaryCalendar() {
     closeMonthPicker();
   };
 
-  const calendarColor = useThemeColor({}, "calendar");
-  const textColor = useThemeColor({}, "text");
-  const primaryColor = useThemeColor({}, "primary");
-  const secondaryText = useThemeColor({}, "secondaryText");
-  const borderColor = useThemeColor({}, "border");
-  const iconColor = useThemeColor({}, "icon");
-  const tint = useThemeColor({}, "tint");
+  const theme = useColorScheme();
+  const {
+    calendar: calendarColor,
+    text: textColor,
+    primary: primaryColor,
+    secondaryText,
+    border: borderColor,
+    icon: iconColor,
+    tint,
+    todayTextColor,
+    normalDayTextColor,
+  } = useThemeColors([
+    "calendar",
+    "text",
+    "primary",
+    "secondaryText",
+    "border",
+    "icon",
+    "tint",
+    "todayTextColor",
+    "normalDayTextColor",
+  ]);
 
   return (
     <>
@@ -177,11 +192,13 @@ export default function DiaryCalendar() {
         {/* Calendar */}
         <Calendar
           current={format(currentMonth, "yyyy-MM-dd")}
-          key={format(currentMonth, "yyyy-MM")}
+          key={format(currentMonth, "yyyy-MM") + theme}
           hideArrows
           firstDay={1}
           headerStyle={{ display: "none" }}
-          onDayPress={(day) => setSelectedDate(day.dateString)}
+          onDayPress={(day) => {
+            setSelectedDate(day.dateString);
+          }}
           markedDates={{
             [selectedDate]: {
               selected: true,
@@ -192,9 +209,9 @@ export default function DiaryCalendar() {
             backgroundColor: calendarColor,
             calendarBackground: calendarColor,
             textSectionTitleColor: secondaryText,
-            dayTextColor: textColor,
+            dayTextColor: normalDayTextColor,
             monthTextColor: primaryColor,
-            todayTextColor: tint,
+            todayTextColor: todayTextColor,
             selectedDayBackgroundColor: tint,
             selectedDayTextColor: "#fff",
             textDisabledColor: secondaryText,
@@ -202,8 +219,6 @@ export default function DiaryCalendar() {
             indicatorColor: tint,
             textDayFontWeight: "500",
             textMonthFontWeight: "700",
-            textDayHeaderFontSize: 13,
-            textDayHeaderFontWeight: "600", //
           }}
         />
       </View>
@@ -219,7 +234,6 @@ export default function DiaryCalendar() {
           borderTopRightRadius: 30,
         }}
       >
-        {/* Title nằm ngoài FlatList */}
         <BottomSheetView style={{ paddingHorizontal: 24, paddingBottom: 8 }}>
           <Text className="text-[20px] font-semibold text-center">
             Select Month

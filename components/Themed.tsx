@@ -30,6 +30,19 @@ export function useThemeColor(
   }
 }
 
+export function useThemeColors(
+  colorNames: Array<keyof typeof Colors.light & keyof typeof Colors.dark>,
+) {
+  const theme = useColorScheme() ?? "light";
+  return colorNames.reduce(
+    (acc, colorName) => {
+      acc[colorName] = Colors[theme][colorName];
+      return acc;
+    },
+    {} as Record<string, string>,
+  );
+}
+
 export function Text(props: TextProps) {
   const { style, lightColor, darkColor, ...otherProps } = props;
   const color = useThemeColor({ light: lightColor, dark: darkColor }, "text");
