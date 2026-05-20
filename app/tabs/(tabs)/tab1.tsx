@@ -1,12 +1,10 @@
 import React from "react";
-import { ScrollView, LogBox } from "react-native";
+import { ScrollView } from "react-native";
 import { View } from "@/components/Themed";
 import { DiaryHeader } from "@/components/custom/DiaryHeader";
 import { QuickNote } from "@/components/custom/QuickNote";
 import { RecentEntries } from "@/components/custom/RecentEntries";
 import DiaryCalendar from "@/components/custom/DiaryCalendar";
-
-LogBox.ignoreLogs(["VirtualizedLists should never be nested"]);
 
 export default function DiaryTab() {
   return (

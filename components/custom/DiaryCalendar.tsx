@@ -1,11 +1,17 @@
 import React, { useMemo, useRef, useState, useCallback } from "react";
-import { View, Text, TouchableOpacity, useColorScheme } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  useColorScheme,
+  ScrollView,
+} from "react-native";
 import { Calendar } from "react-native-calendars";
 
 import { Ionicons } from "@expo/vector-icons";
 
 import { addMonths, subMonths, format, setMonth } from "date-fns";
-import BottomSheet, { BottomSheetFlatList } from "@gorhom/bottom-sheet";
+import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { useThemeColors } from "../Themed";
 import { dayNames, monthNames } from "@/constants/Variable";
 
@@ -231,20 +237,18 @@ export default function DiaryCalendar() {
           borderTopRightRadius: 30,
         }}
       >
-        <BottomSheetFlatList
-          data={monthNames}
-          keyExtractor={(item) => item}
+        <BottomSheetScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 40 }}
-          ListHeaderComponent={
-            <Text className="text-[20px] font-semibold text-center mb-3">
-              Select Month
-            </Text>
-          }
-          renderItem={({ item, index }) => {
+        >
+          <Text className="text-[20px] font-semibold text-center mb-3">
+            Select Month
+          </Text>
+          {monthNames.map((item, index) => {
             const selected = currentMonth.getMonth() === index;
             return (
               <TouchableOpacity
+                key={item}
                 onPress={() => selectMonth(index)}
                 className={`py-4 px-5 rounded-2xl mb-2 ${
                   selected ? "bg-[#F2E2D5]" : "bg-[#F7F4F2]"
@@ -259,8 +263,8 @@ export default function DiaryCalendar() {
                 </Text>
               </TouchableOpacity>
             );
-          }}
-        />
+          })}
+        </BottomSheetScrollView>
       </BottomSheet>
     </>
   );
