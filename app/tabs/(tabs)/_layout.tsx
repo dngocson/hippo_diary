@@ -1,19 +1,20 @@
 import React from "react";
-import { View, TouchableOpacity, StyleSheet } from "react-native";
+import { View, useWindowDimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Tabs, useRouter } from "expo-router";
+import { Tabs } from "expo-router";
 import { useThemeColors } from "@/components/Themed";
 
 export default function TabLayout() {
-  const { background, tint, tabIconDefault, tabIconSelected, button } =
+  const { width: screenWidth } = useWindowDimensions();
+  const { background, tabIconDefault, tabIconSelected, button, border } =
     useThemeColors([
       "background",
       "tint",
       "tabIconDefault",
       "tabIconSelected",
       "button",
+      "border",
     ]);
-  const router = useRouter();
 
   return (
     <Tabs
@@ -22,16 +23,29 @@ export default function TabLayout() {
         tabBarActiveTintColor: tabIconSelected,
         tabBarInactiveTintColor: tabIconDefault,
         tabBarStyle: {
+          position: "absolute",
+          bottom: 24,
+          left: 0,
+          right: 0,
+          marginHorizontal: screenWidth * 0.04,
+          height: 72,
+          borderRadius: 40,
           backgroundColor: background,
-          borderTopWidth: 0,
-          elevation: 0,
-          height: 80,
-          paddingBottom: 16,
-          paddingTop: 8,
+          borderWidth: 1,
+          borderColor: border,
+          borderTopWidth: 1,
+          paddingTop: 10,
+          paddingBottom: 8,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: 0.08,
+          shadowRadius: 24,
+          elevation: 12,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: "500",
+          fontSize: 10,
+          fontWeight: "600",
+          marginTop: 2,
         },
       }}
     >
@@ -40,7 +54,7 @@ export default function TabLayout() {
         options={{
           title: "Diary",
           tabBarIcon: ({ color }) => (
-            <Ionicons name="book-outline" size={22} color={color} />
+            <Ionicons name="book-outline" size={20} color={color} />
           ),
         }}
       />
@@ -49,7 +63,7 @@ export default function TabLayout() {
         options={{
           title: "Calendar",
           tabBarIcon: ({ color }) => (
-            <Ionicons name="calendar-outline" size={22} color={color} />
+            <Ionicons name="calendar-outline" size={20} color={color} />
           ),
         }}
       />
@@ -60,28 +74,27 @@ export default function TabLayout() {
           tabBarIcon: () => (
             <View
               style={{
-                width: 56,
-                height: 56,
-                borderRadius: 28,
+                width: 52,
+                height: 52,
+                borderRadius: 26,
                 backgroundColor: button,
                 alignItems: "center",
                 justifyContent: "center",
-                marginBottom: 24,
-                shadowColor: "#000",
+                marginBottom: 28,
+                shadowColor: button,
                 shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.2,
+                shadowOpacity: 0.35,
                 shadowRadius: 8,
-                elevation: 6,
+                elevation: 8,
               }}
             >
-              <Ionicons name="pencil" size={24} color="#fff" />
+              <Ionicons name="pencil" size={22} color="#fff" />
             </View>
           ),
         }}
         listeners={{
           tabPress: (e) => {
             e.preventDefault();
-            // TODO: Open write diary modal or navigate to write screen
           },
         }}
       />
@@ -90,7 +103,7 @@ export default function TabLayout() {
         options={{
           title: "Stats",
           tabBarIcon: ({ color }) => (
-            <Ionicons name="bar-chart-outline" size={22} color={color} />
+            <Ionicons name="bar-chart-outline" size={20} color={color} />
           ),
         }}
       />
@@ -99,7 +112,7 @@ export default function TabLayout() {
         options={{
           title: "Profile",
           tabBarIcon: ({ color }) => (
-            <Ionicons name="person-outline" size={22} color={color} />
+            <Ionicons name="person-outline" size={20} color={color} />
           ),
         }}
       />
