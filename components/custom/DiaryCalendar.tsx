@@ -5,10 +5,7 @@ import { Calendar } from "react-native-calendars";
 import { Ionicons } from "@expo/vector-icons";
 
 import { addMonths, subMonths, format, setMonth } from "date-fns";
-import BottomSheet, {
-  BottomSheetFlatList,
-  BottomSheetView,
-} from "@gorhom/bottom-sheet";
+import BottomSheet, { BottomSheetFlatList } from "@gorhom/bottom-sheet";
 import { useThemeColors } from "../Themed";
 import { dayNames, monthNames } from "@/constants/Variable";
 
@@ -234,17 +231,16 @@ export default function DiaryCalendar() {
           borderTopRightRadius: 30,
         }}
       >
-        <BottomSheetView style={{ paddingHorizontal: 24, paddingBottom: 8 }}>
-          <Text className="text-[20px] font-semibold text-center">
-            Select Month
-          </Text>
-        </BottomSheetView>
-
         <BottomSheetFlatList
           data={monthNames}
           keyExtractor={(item) => item}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 40 }}
+          ListHeaderComponent={
+            <Text className="text-[20px] font-semibold text-center mb-3">
+              Select Month
+            </Text>
+          }
           renderItem={({ item, index }) => {
             const selected = currentMonth.getMonth() === index;
             return (

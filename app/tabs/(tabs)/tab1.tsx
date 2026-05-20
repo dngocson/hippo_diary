@@ -1,16 +1,26 @@
-import EditScreenInfo from '@/components/EditScreenInfo';
-import { Center } from '@/components/ui/center';
-import { Divider } from '@/components/ui/divider';
-import { Heading } from '@/components/ui/heading';
-import { Text } from '@/components/ui/text';
+import React from "react";
+import { ScrollView, LogBox } from "react-native";
+import { View } from "@/components/Themed";
+import { DiaryHeader } from "@/components/custom/DiaryHeader";
+import { QuickNote } from "@/components/custom/QuickNote";
+import { RecentEntries } from "@/components/custom/RecentEntries";
+import DiaryCalendar from "@/components/custom/DiaryCalendar";
 
-export default function Tab2() {
+LogBox.ignoreLogs(["VirtualizedLists should never be nested"]);
+
+export default function DiaryTab() {
   return (
-    <Center className="flex-1">
-      <Heading className="font-bold text-2xl">Expo - Tab 1</Heading>
-      <Divider className="my-[30px] w-[80%]" />
-      <Text className="p-4">Example below to use gluestack-ui components.</Text>
-      <EditScreenInfo path="app/(app)/(tabs)/tab1.tsx" />
-    </Center>
+    <View className="flex-1">
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 30, paddingTop: 30 }}
+        nestedScrollEnabled
+      >
+        <DiaryHeader />
+        <QuickNote />
+        <RecentEntries />
+        <DiaryCalendar />
+      </ScrollView>
+    </View>
   );
 }
