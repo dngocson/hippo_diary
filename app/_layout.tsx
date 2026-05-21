@@ -1,4 +1,11 @@
+import {
+  ModalProvider,
+  useModalContext,
+} from "@/components/custom/ModalContext";
+import { Fab, FabIcon } from "@/components/ui/fab";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
+import { MoonIcon, SlashIcon, SunIcon } from "@/components/ui/icon";
+import { useColorScheme } from "@/components/useColorScheme";
 import "@/global.css";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import {
@@ -7,18 +14,10 @@ import {
   ThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
+import { Slot, usePathname } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
-import { useColorScheme } from "@/components/useColorScheme";
-import { Slot, usePathname } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-import { Fab, FabIcon } from "@/components/ui/fab";
-import { MoonIcon, SunIcon, SlashIcon } from "@/components/ui/icon";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import {
-  ModalProvider,
-  useModalContext,
-} from "@/components/custom/ModalContext";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -99,7 +98,7 @@ function RootLayoutContent({
   return (
     <>
       <Slot />
-      {pathname === "/" && !isAnyModalOpen && (
+      {pathname.startsWith("/tabs") && !isAnyModalOpen && (
         <Fab onPress={handleToggleTheme} className="m-6" size="lg">
           <FabIcon
             as={

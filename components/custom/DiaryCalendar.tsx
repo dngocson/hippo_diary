@@ -14,8 +14,10 @@ import { addMonths, subMonths, format, setMonth } from "date-fns";
 import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { useThemeColors } from "../Themed";
 import { dayNames, monthNames } from "@/constants/Variable";
+import { useRouter } from "expo-router";
 
 export default function DiaryCalendar() {
+  const router = useRouter();
   const bottomSheetRef = useRef<BottomSheet>(null);
 
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -201,6 +203,10 @@ export default function DiaryCalendar() {
           headerStyle={{ display: "none" }}
           onDayPress={(day) => {
             setSelectedDate(day.dateString);
+            router.push({
+              pathname: "/tabs/(tabs)/(calendar)/day-detail",
+              params: { date: day.dateString },
+            });
           }}
           markingType={"period"}
           markedDates={{

@@ -24,6 +24,7 @@
     "@react-aria/utils": "^3.29.0",
     "@react-navigation/native": "^7.1.6",
     "@supabase/supabase-js": "^2.106.1",
+    "@tanstack/react-form": "^1.32.0",
     "@tanstack/react-query": "^5.100.11",
     "axios": "^1.16.1",
     "babel-plugin-module-resolver": "^5.0.2",
@@ -56,6 +57,7 @@
     "slugify": "^1.6.9",
     "tailwind-variants": "^0.1.20",
     "tailwindcss": "^3.4.17",
+    "zod": "^4.4.3",
     "zustand": "^5.0.13"
   },
   "devDependencies": {
