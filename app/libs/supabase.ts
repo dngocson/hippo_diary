@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import config from "@/app/config";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Lấy Supabase config từ environment variables
 const supabaseUrl = config.supabase.url;
@@ -17,13 +18,9 @@ if (!supabaseUrl || !supabaseKey) {
 // Tạo Supabase client
 export const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
-    // Storage key cho AsyncStorage
-    storageKey: "hippo-diary-auth",
-    // Auto refresh token
-    autoRefreshToken: true,
-    // Persist session
+    storage: AsyncStorage,
     persistSession: true,
-    // Detect session in URL (for OAuth redirects)
+    autoRefreshToken: true,
     detectSessionInUrl: false,
   },
 });

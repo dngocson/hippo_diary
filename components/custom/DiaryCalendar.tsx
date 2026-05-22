@@ -21,7 +21,7 @@ import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { useThemeColors } from "../Themed";
 import { dayNames, monthNames } from "@/constants/Variable";
 import { useRouter } from "expo-router";
-import { useMemories } from "@/app/services/supabaseMemoryService";
+import { useMemories, useMemory } from "@/app/services/supabaseMemoryService";
 import supabase from "@/app/libs/supabase";
 
 export default function DiaryCalendar() {
@@ -74,23 +74,24 @@ export default function DiaryCalendar() {
     "normalDayTextColor",
   ]);
 
-  useEffect(() => {
-    const test = async () => {
-      try {
-        const response = await fetch(
-          "https://jsonplaceholder.typicode.com/todos/1",
-        );
+  // useEffect(() => {
+  //   const test = async () => {
+  //     try {
+  //       const response = await fetch("https://fakestoreapi.com/products");
 
-        const data = await response.json();
+  //       const data = await response.json();
 
-        console.log("SUCCESS:", data);
-      } catch (e) {
-        console.log("FAILED:", e);
-      }
-    };
+  //       console.log("SUCCESS:", data);
+  //     } catch (e) {
+  //       console.log("FAILED:", e);
+  //     }
+  //   };
 
-    test();
-  }, [currentMonth]);
+  //   test();
+  // }, [currentMonth]);
+
+  const data = useMemory("b4444444-4444-4444-4444-444444444444");
+  console.log("MEMORIES:", data);
   return (
     <>
       <View

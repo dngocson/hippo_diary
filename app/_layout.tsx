@@ -21,6 +21,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/app/libs/queryClient";
 import { validateConfig } from "@/app/config";
+import "react-native-url-polyfill/auto";
 
 export {
   // Catch any errors thrown by the Layout component.
