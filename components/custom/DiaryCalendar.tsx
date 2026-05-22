@@ -212,7 +212,7 @@ export default function DiaryCalendar() {
           markedDates={{
             [selectedDate]: {
               selected: true,
-              color: "#50cebb",
+              color: textColor,
               textColor: "white",
             },
           }}

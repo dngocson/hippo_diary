@@ -18,6 +18,9 @@ import { Slot, usePathname } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "@/app/libs/queryClient";
+import { validateConfig } from "@/app/config";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -33,6 +36,12 @@ export default function RootLayout() {
   });
 
   const [styleLoaded, setStyleLoaded] = useState(false);
+
+  // Validate app configuration
+  useEffect(() => {
+    validateConfig();
+  }, []);
+
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {
     if (error) throw error;
@@ -66,19 +75,21 @@ function RootLayoutNav() {
 
   return (
     <GestureHandlerRootView>
-      <ModalProvider>
-        <GluestackUIProvider mode={mode}>
-          <ThemeProvider
-            value={effectiveColorScheme === "dark" ? DarkTheme : DefaultTheme}
-          >
-            <RootLayoutContent
-              mode={mode}
-              handleToggleTheme={handleToggleTheme}
-              effectiveColorScheme={effectiveColorScheme}
-            />
-          </ThemeProvider>
-        </GluestackUIProvider>
-      </ModalProvider>
+      <QueryClientProvider client={queryClient}>
+        <ModalProvider>
+          <GluestackUIProvider mode={mode}>
+            <ThemeProvider
+              value={effectiveColorScheme === "dark" ? DarkTheme : DefaultTheme}
+            >
+              <RootLayoutContent
+                mode={mode}
+                handleToggleTheme={handleToggleTheme}
+                effectiveColorScheme={effectiveColorScheme}
+              />
+            </ThemeProvider>
+          </GluestackUIProvider>
+        </ModalProvider>
+      </QueryClientProvider>
     </GestureHandlerRootView>
   );
 }

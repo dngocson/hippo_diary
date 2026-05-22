@@ -1,10 +1,12 @@
 import React from "react";
 import { View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Tabs } from "expo-router";
+import { Tabs, useRouter, useSegments } from "expo-router";
 import { useThemeColors } from "@/components/Themed";
 
 export default function TabLayout() {
+  const router = useRouter();
+  const segments = useSegments();
   const { background, tabIconDefault, tabIconSelected, button, border } =
     useThemeColors([
       "background",
@@ -92,6 +94,12 @@ export default function TabLayout() {
           listeners={{
             tabPress: (e) => {
               e.preventDefault();
+              const isOnDayDetail = (segments as string[]).includes(
+                "day-detail",
+              );
+              if (!isOnDayDetail) {
+                router.replace("/tabs/(tabs)/(calendar)/day-detail");
+              }
             },
           }}
         />
