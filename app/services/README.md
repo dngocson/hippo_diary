@@ -1,251 +1,425 @@
-# Axios & React Query Configuration
+# Supabase Services Documentation
 
-## Setup hoàn tất! 🎉
+Tài liệu hướng dẫn sử dụng các services cho Hippo Diary.
 
-Dự án đã được cấu hình với Axios và React Query (TanStack Query) để quản lý API calls hiệu quả.
+## 📁 Danh sách Services
 
-## Cấu trúc files
+- **supabaseProfileService**: Quản lý user profiles
+- **supabaseDiaryService**: Quản lý diaries
+- **supabaseMoodService**: Quản lý moods
+- **supabaseMemoryService**: Quản lý memories (kỷ niệm)
+- **supabaseNoteService**: Quản lý notes (standalone hoặc thuộc memory)
+- **supabaseCheckinService**: Quản lý checkins (địa điểm)
+- **supabaseTagService**: Quản lý tags và memory_tags
+- **supabaseMemoryImageService**: Quản lý images của memories
 
-```
-app/
-├── config/
-│   └── index.ts          # App configuration với type safety
-├── libs/
-│   ├── axios.ts          # Axios instance với interceptors
-│   └── queryClient.ts    # React Query client config
-├── services/
-│   ├── types.ts          # Types và query keys
-│   └── diaryService.ts   # API service với React Query hooks
-└── _layout.tsx           # Root layout với QueryClientProvider
-.env                       # Environment variables (không commit)
-.env.example               # Environment template
-ENV_SETUP.md               # Hướng dẫn chi tiết setup env
-```
+## 🚀 Cách sử dụng
 
-## Cấu hình môi trường
-
-### 1. Setup .env file
-
-```bash
-# Copy template
-cp .env.example .env
-```
-
-### 2. Cập nhật .env
-
-```env
-# API Configuration
-EXPO_PUBLIC_API_URL=http://localhost:3000/api
-
-# Supabase (optional)
-EXPO_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-
-# App Config
-EXPO_PUBLIC_APP_NAME=Hippo Diary
-EXPO_PUBLIC_APP_VERSION=1.0.0
-EXPO_PUBLIC_ENABLE_DEBUG=true
-```
-
-📖 **Xem [ENV_SETUP.md](../ENV_SETUP.md) để biết chi tiết về cấu hình môi trường**
-
-### 3. Sử dụng Config
-
-```typescript
-import config from "@/app/config";
-
-// Type-safe access
-const apiUrl = config.api.baseUrl;
-const appName = config.app.name;
-const debugMode = config.features.debug;
-```
-
-#### Lấy danh sách diary entries
+### 1. Profile Service
 
 ```tsx
-import { useDiaryEntries } from "@/app/services/diaryService";
+import {
+  useCurrentProfile,
+  useUpdateProfile,
+} from "@/app/services/supabaseProfileService";
 
-function DiaryList() {
-  const { data, isLoading, error } = useDiaryEntries();
+function ProfileScreen() {
+  const { data: profile, isLoading } = useCurrentProfile();
+  const updateProfile = useUpdateProfile();
+
+  const handleUpdate = async () => {
+    await updateProfile.mutateAsync({
+      username: "newhippo",
+      avatar_url: "https://example.com/avatar.jpg",
+    });
+  };
 
   if (isLoading) return <Text>Loading...</Text>;
-  if (error) return <Text>Error: {error.message}</Text>;
 
   return (
     <View>
-      {data?.map((entry) => (
-        <Text key={entry.id}>{entry.content}</Text>
+      <Text>Username: {profile?.username}</Text>
+      <Button onPress={handleUpdate}>Update Profile</Button>
+    </View>
+  );
+}
+```
+
+### 2. Diary Service
+
+```tsx
+import {
+  useDiaries,
+  useCreateDiary,
+  useUpdateDiary,
+} from "@/app/services/supabaseDiaryService";
+
+function DiaryList() {
+  const { data: diaries = [] } = useDiaries();
+  const createDiary = useCreateDiary();
+
+  const handleCreate = async () => {
+    await createDiary.mutateAsync({
+      title: "My Trip to Japan",
+      description: "Summer vacation 2024",
+      visibility: "private",
+    });
+  };
+
+  return (
+    <View>
+      {diaries.map((diary) => (
+        <Text key={diary.id}>{diary.title}</Text>
+      ))}
+      <Button onPress={handleCreate}>Create New Diary</Button>
+    </View>
+  );
+}
+```
+
+### 3. Memory Service
+
+```tsx
+import {
+  useMemoriesByDiary,
+  useCreateMemory,
+} from "@/app/services/supabaseMemoryService";
+
+function MemoryList({ diaryId }: { diaryId: string }) {
+  const { data: memories = [] } = useMemoriesByDiary(diaryId);
+  const createMemory = useCreateMemory();
+
+  const handleCreate = async () => {
+    await createMemory.mutateAsync({
+      diary_id: diaryId,
+      title: "Tokyo Tower Visit",
+      content: "Amazing experience!",
+      mood_id: 1, // Happy
+      start_date: "2024-07-01",
+      end_date: "2024-07-01",
+    });
+  };
+
+  return (
+    <View>
+      {memories.map((memory) => (
+        <Text key={memory.id}>{memory.title}</Text>
+      ))}
+      <Button onPress={handleCreate}>Add Memory</Button>
+    </View>
+  );
+}
+```
+
+### 4. Note Service
+
+```tsx
+import {
+  useNotesByMemory,
+  useStandaloneNotes,
+  useCreateNote,
+} from "@/app/services/supabaseNoteService";
+
+// Notes thuộc một memory
+function MemoryNotes({ memoryId }: { memoryId: string }) {
+  const { data: notes = [] } = useNotesByMemory(memoryId);
+  const createNote = useCreateNote();
+
+  const handleCreate = async () => {
+    await createNote.mutateAsync({
+      memory_id: memoryId,
+      title: "Don't forget",
+      content: "Need to visit this place again!",
+    });
+  };
+
+  return <View>{/* ... */}</View>;
+}
+
+// Standalone notes (không thuộc memory nào)
+function QuickNotes() {
+  const { data: notes = [] } = useStandaloneNotes();
+  const createNote = useCreateNote();
+
+  const handleCreate = async () => {
+    await createNote.mutateAsync({
+      memory_id: null, // null = standalone
+      content: "Random thought of the day",
+    });
+  };
+
+  return <View>{/* ... */}</View>;
+}
+```
+
+### 5. Checkin Service
+
+```tsx
+import {
+  useCheckinsByMemory,
+  useCreateCheckin,
+} from "@/app/services/supabaseCheckinService";
+
+function LocationCheckins({ memoryId }: { memoryId: string }) {
+  const { data: checkins = [] } = useCheckinsByMemory(memoryId);
+  const createCheckin = useCreateCheckin();
+
+  const handleCheckin = async () => {
+    await createCheckin.mutateAsync({
+      memory_id: memoryId,
+      place_name: "Tokyo Tower",
+      address: "4-2-8 Shibakoen, Minato City, Tokyo",
+      latitude: 35.6586,
+      longitude: 139.7454,
+      checkin_time: new Date().toISOString(),
+    });
+  };
+
+  return <View>{/* ... */}</View>;
+}
+```
+
+### 6. Tag Service
+
+```tsx
+import {
+  useTags,
+  useMemoryTags,
+  useSetMemoryTags,
+  useGetOrCreateTag,
+} from "@/app/services/supabaseTagService";
+
+function TagManager({ memoryId }: { memoryId: string }) {
+  const { data: allTags = [] } = useTags();
+  const { data: memoryTags = [] } = useMemoryTags(memoryId);
+  const setTags = useSetMemoryTags();
+  const getOrCreateTag = useGetOrCreateTag();
+
+  const handleAddTag = async () => {
+    // Tạo tag mới hoặc lấy existing
+    const tag = await getOrCreateTag.mutateAsync("travel");
+
+    // Set tags cho memory
+    const currentTagIds = memoryTags.map((t) => t.id);
+    await setTags.mutateAsync({
+      memoryId,
+      tagIds: [...currentTagIds, tag.id],
+    });
+  };
+
+  return <View>{/* ... */}</View>;
+}
+```
+
+### 7. Memory Image Service
+
+```tsx
+import {
+  useMemoryImages,
+  useAddMemoryImage,
+  useReorderMemoryImages,
+} from "@/app/services/supabaseMemoryImageService";
+
+function MemoryGallery({ memoryId }: { memoryId: string }) {
+  const { data: images = [] } = useMemoryImages(memoryId);
+  const addImage = useAddMemoryImage();
+  const reorder = useReorderMemoryImages();
+
+  const handleAddImage = async (imageUrl: string) => {
+    await addImage.mutateAsync({
+      memory_id: memoryId,
+      image_url: imageUrl,
+      // sort_order sẽ tự động set = max + 1
+    });
+  };
+
+  const handleReorder = async (
+    newOrder: Array<{ id: string; sort_order: number }>,
+  ) => {
+    await reorder.mutateAsync({ images: newOrder });
+  };
+
+  return (
+    <View>
+      {images.map((img) => (
+        <Image key={img.id} source={{ uri: img.image_url }} />
       ))}
     </View>
   );
 }
 ```
 
-#### Lấy diary entry theo ngày
+### 8. Mood Service
 
 ```tsx
-import { useDiaryEntryByDate } from "@/app/services/diaryService";
+import { useMoods, useMood } from "@/app/services/supabaseMoodService";
 
-function DayDetail() {
-  const { date } = useLocalSearchParams();
-  const { data, isLoading } = useDiaryEntryByDate(date);
-
-  return <View>{/* Render diary entry */}</View>;
-}
-```
-
-#### Tạo diary entry mới
-
-```tsx
-import { useCreateDiaryEntry } from "@/app/services/diaryService";
-
-function CreateDiary() {
-  const createMutation = useCreateDiaryEntry();
-
-  const handleSubmit = () => {
-    createMutation.mutate(
-      {
-        date: "2026-05-22",
-        content: "Nội dung nhật ký",
-        activities: "Hoạt động hôm nay",
-      },
-      {
-        onSuccess: (data) => {
-          console.log("Created:", data);
-        },
-        onError: (error) => {
-          console.error("Error:", error);
-        },
-      },
-    );
-  };
+function MoodSelector() {
+  const { data: moods = [] } = useMoods();
 
   return (
-    <Button onPress={handleSubmit} disabled={createMutation.isPending}>
-      {createMutation.isPending ? "Saving..." : "Save"}
-    </Button>
+    <View>
+      {moods.map((mood) => (
+        <Button key={mood.id}>
+          {mood.emoji} {mood.name}
+        </Button>
+      ))}
+    </View>
   );
 }
 ```
 
-#### Cập nhật diary entry
+## 🔥 Features
+
+### ✅ Type Safety
+
+Tất cả services đều có TypeScript types đầy đủ.
+
+### ✅ React Query Integration
+
+- Automatic caching
+- Optimistic updates
+- Auto refetch on reconnect
+- Error handling
+
+### ✅ Query Key Management
+
+Mỗi service có query keys được organize tốt:
 
 ```tsx
-import { useUpdateDiaryEntry } from "@/app/services/diaryService";
-
-function EditDiary() {
-  const updateMutation = useUpdateDiaryEntry();
-
-  const handleUpdate = () => {
-    updateMutation.mutate({
-      id: "entry-id",
-      content: "Nội dung mới",
-      activities: "Hoạt động mới",
-    });
-  };
-
-  return <Button onPress={handleUpdate}>Update</Button>;
-}
+DIARY_QUERY_KEYS.diaries.all(); // ["diaries"]
+DIARY_QUERY_KEYS.diaries.lists(); // ["diaries", "list"]
+DIARY_QUERY_KEYS.diaries.detail(id); // ["diaries", "123"]
 ```
 
-#### Xóa diary entry
+### ✅ RLS Security
+
+Tất cả queries đều tuân theo Row Level Security policies từ database.
+
+## 📊 Database Schema
+
+Schema đầy đủ có trong file `database/schema.sql`.
+
+### Relationships:
+
+- `profiles` ← `diaries` (user có nhiều diaries)
+- `diaries` ← `memories` (diary có nhiều memories)
+- `memories` ← `memory_images` (memory có nhiều images)
+- `memories` ↔ `tags` (many-to-many qua `memory_tags`)
+- `memories` ← `notes` (optional)
+- `memories` ← `checkins` (optional)
+- `users` ← `notes` (standalone notes)
+- `users` ← `checkins` (standalone checkins)
+
+## 🛡️ Authentication
+
+Tất cả services đều yêu cầu authentication. User ID được lấy từ:
 
 ```tsx
-import { useDeleteDiaryEntry } from "@/app/services/diaryService";
-
-function DeleteDiary() {
-  const deleteMutation = useDeleteDiaryEntry();
-
-  const handleDelete = (id: string) => {
-    deleteMutation.mutate(id, {
-      onSuccess: () => {
-        console.log("Deleted successfully");
-      },
-    });
-  };
-
-  return <Button onPress={() => handleDelete("entry-id")}>Delete</Button>;
-}
+const {
+  data: { user },
+} = await supabase.auth.getUser();
 ```
 
-### 3. Axios Interceptors
+## 🔄 Mutations với Invalidation
 
-Axios đã được cấu hình với:
+Khi mutation thành công, React Query sẽ tự động invalidate các queries liên quan:
 
-- **Request Interceptor**: Tự động thêm token vào header (cần uncomment code)
-- **Response Interceptor**: Xử lý lỗi chung (401, network errors, etc.)
-- **Timeout**: 10 giây
-- **Base URL**: Từ environment variable
+```tsx
+// Sau khi tạo diary mới
+queryClient.invalidateQueries({
+  queryKey: DIARY_QUERY_KEYS.diaries.lists(),
+});
 
-### 4. React Query Features
+// Sau khi update memory
+queryClient.invalidateQueries({
+  queryKey: MEMORY_QUERY_KEYS.memories.byDiary(diaryId),
+});
+```
 
-- ✅ Automatic caching (5 phút stale time)
-- ✅ Auto retry (2 lần cho queries, 1 lần cho mutations)
-- ✅ Garbage collection (10 phút)
-- ✅ Optimistic updates support
-- ✅ Query invalidation
+## 🎨 Best Practices
 
-### 5. Thêm API service mới
+1. **Luôn enable hooks có điều kiện:**
 
-Để thêm service mới (ví dụ: User service):
+```tsx
+const { data } = useMemory(memoryId, { enabled: !!memoryId });
+```
 
-1. Thêm types vào `services/types.ts`:
+2. **Handle loading states:**
 
-```ts
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-}
+```tsx
+if (isLoading) return <Spinner />;
+if (error) return <ErrorMessage error={error} />;
+```
 
-export const QUERY_KEYS = {
-  // ... existing keys
-  user: {
-    all: ["user"] as const,
-    detail: (id: string) => [...QUERY_KEYS.user.all, id] as const,
+3. **Use optimistic updates cho UX tốt hơn:**
+
+```tsx
+const mutation = useUpdateDiary({
+  onMutate: async (newData) => {
+    // Cancel outgoing queries
+    await queryClient.cancelQueries({ queryKey: ["diaries"] });
+
+    // Snapshot previous value
+    const previous = queryClient.getQueryData(["diaries"]);
+
+    // Optimistically update
+    queryClient.setQueryData(["diaries"], (old) => {
+      return old?.map((d) => (d.id === newData.id ? newData : d));
+    });
+
+    return { previous };
   },
-};
+  onError: (err, variables, context) => {
+    // Rollback on error
+    queryClient.setQueryData(["diaries"], context?.previous);
+  },
+});
 ```
 
-2. Tạo `services/userService.ts`:
+## 🔌 API Reference
 
-```ts
-import { useQuery, useMutation } from "@tanstack/react-query";
-import axiosInstance from "@/app/libs/axios";
-import { User, QUERY_KEYS } from "./types";
+Mỗi service cung cấp:
 
-export const getUser = async (id: string): Promise<User> => {
-  const { data } = await axiosInstance.get(`/users/${id}`);
-  return data.data;
-};
+### API Functions (Pure Functions)
 
-export const useUser = (id: string) => {
-  return useQuery({
-    queryKey: QUERY_KEYS.user.detail(id),
-    queryFn: () => getUser(id),
-  });
-};
+- `getXxx()` - Fetch data
+- `createXxx()` - Create new record
+- `updateXxx()` - Update record
+- `deleteXxx()` - Delete record
+
+### React Hooks
+
+- `useXxx()` - Query hook
+- `useCreateXxx()` - Create mutation hook
+- `useUpdateXxx()` - Update mutation hook
+- `useDeleteXxx()` - Delete mutation hook
+
+## 📝 Environment Setup
+
+Đảm bảo `.env` có:
+
+```env
+EXPO_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
+EXPO_PUBLIC_SUPABASE_ANON_KEY=eyJxxx...
 ```
 
-## Best Practices
+## 🐛 Debugging
 
-1. **Error Handling**: Luôn xử lý errors trong component
-2. **Loading States**: Hiển thị loading indicator khi `isLoading`
-3. **Query Keys**: Sử dụng structured query keys từ `QUERY_KEYS`
-4. **Mutations**: Sử dụng callbacks (`onSuccess`, `onError`) để xử lý kết quả
-5. **Invalidation**: Invalidate queries sau mutation để cập nhật UI
-
-## Debug
-
-Để debug React Query, có thể thêm React Query Devtools (chỉ dành cho web):
-
-```bash
-npm install @tanstack/react-query-devtools
-```
+Enable React Query DevTools (optional):
 
 ```tsx
+import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
-// Thêm vào component
-<ReactQueryDevtools initialIsOpen={false} />;
+<QueryClientProvider client={queryClient}>
+  <App />
+  <ReactQueryDevtools initialIsOpen={false} />
+</QueryClientProvider>;
 ```
+
+## 📚 More Resources
+
+- [Supabase Documentation](https://supabase.com/docs)
+- [TanStack Query Documentation](https://tanstack.com/query/latest)
+- [Database Schema](../database/schema.sql)
