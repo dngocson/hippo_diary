@@ -1,4 +1,10 @@
-import React, { useMemo, useRef, useState, useCallback } from "react";
+import React, {
+  useMemo,
+  useRef,
+  useState,
+  useCallback,
+  useEffect,
+} from "react";
 import {
   View,
   Text,
@@ -15,6 +21,8 @@ import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { useThemeColors } from "../Themed";
 import { dayNames, monthNames } from "@/constants/Variable";
 import { useRouter } from "expo-router";
+import { useMemories } from "@/app/services/supabaseMemoryService";
+import supabase from "@/app/libs/supabase";
 
 export default function DiaryCalendar() {
   const router = useRouter();
@@ -66,6 +74,23 @@ export default function DiaryCalendar() {
     "normalDayTextColor",
   ]);
 
+  useEffect(() => {
+    const test = async () => {
+      try {
+        const response = await fetch(
+          "https://jsonplaceholder.typicode.com/todos/1",
+        );
+
+        const data = await response.json();
+
+        console.log("SUCCESS:", data);
+      } catch (e) {
+        console.log("FAILED:", e);
+      }
+    };
+
+    test();
+  }, [currentMonth]);
   return (
     <>
       <View

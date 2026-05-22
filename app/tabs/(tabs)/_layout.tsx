@@ -44,20 +44,20 @@ export default function TabLayout() {
         }}
       >
         <Tabs.Screen
-          name="tab1"
+          name="home"
           options={{
-            title: "Diary",
+            title: "Calendar",
             tabBarIcon: ({ color }) => (
-              <Ionicons name="book-outline" size={20} color={color} />
+              <Ionicons name="calendar-outline" size={20} color={color} />
             ),
           }}
         />
         <Tabs.Screen
           name="(calendar)"
           options={{
-            title: "Calendar",
+            title: "Detail",
             tabBarIcon: ({ color }) => (
-              <Ionicons name="calendar-outline" size={20} color={color} />
+              <Ionicons name="today-outline" size={20} color={color} />
             ),
           }}
         />

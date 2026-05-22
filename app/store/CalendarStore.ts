@@ -67,3 +67,5 @@ export const useDiaryCalendarStore = create<DiaryCalendarState>((set, get) => ({
       isMonthPickerOpen: false,
     }),
 }));
+
+export default useDiaryCalendarStore;

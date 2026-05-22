@@ -6,7 +6,7 @@ import { QuickNote } from "@/components/custom/QuickNote";
 import { RecentEntries } from "@/components/custom/RecentEntries";
 import DiaryCalendar from "@/components/custom/DiaryCalendar";
 
-export default function DiaryTab() {
+export default function CalendarOverview() {
   return (
     <View className="flex-1">
       <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled>
