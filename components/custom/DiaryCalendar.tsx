@@ -1,31 +1,37 @@
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import { Text, TouchableOpacity, useColorScheme, View } from "react-native";
 import { Calendar } from "react-native-calendars";
-
 import { Ionicons } from "@expo/vector-icons";
-import merge from "lodash/merge";
-
 import { dayNames, monthNames } from "@/constants/Variable";
 import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet";
-import {
-  addMonths,
-  format,
-  setMonth,
-  subMonths,
-  eachDayOfInterval,
-} from "date-fns";
-import { useRouter } from "expo-router";
+import { addMonths, format, setMonth, subMonths } from "date-fns";
+import { useRouter, useFocusEffect } from "expo-router";
 import { useThemeColors } from "../Themed";
-import { useFocusEffect } from "expo-router";
 import { useMemories } from "@/app/services/supabaseMemoryService";
+import { useAniversaries } from "@/app/services/supabaseAniversaryService";
+import { useMarkedDates } from "@/app/hooks/useMarkedDates";
 
 export default function DiaryCalendar() {
   const router = useRouter();
   const bottomSheetRef = useRef<BottomSheet>(null);
   const navigatingRef = useRef(false);
+  const theme = useColorScheme();
 
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const { data: memories = [], isLoading } = useMemories(currentMonth);
+  const [selectedDate, setSelectedDate] = useState(
+    format(new Date(), "yyyy-MM-dd"),
+  );
+
+  const { data: memories = [] } = useMemories(currentMonth);
+  const { data: aniversaries = [] } = useAniversaries(currentMonth);
+  const markedDates = useMarkedDates(
+    memories,
+    aniversaries,
+    selectedDate,
+    currentMonth,
+  );
+
+  const snapPoints = useMemo(() => ["45%"], []);
 
   useFocusEffect(
     useCallback(() => {
@@ -33,31 +39,24 @@ export default function DiaryCalendar() {
     }, []),
   );
 
-  const [selectedDate, setSelectedDate] = useState(
-    format(new Date(), "yyyy-MM-dd"),
+  const openMonthPicker = useCallback(
+    () => bottomSheetRef.current?.expand(),
+    [],
+  );
+  const closeMonthPicker = useCallback(
+    () => bottomSheetRef.current?.close(),
+    [],
+  );
+  const selectMonth = useCallback(
+    (index: number) => {
+      setCurrentMonth((prev) => setMonth(prev, index));
+      closeMonthPicker();
+    },
+    [closeMonthPicker],
   );
 
-  const snapPoints = useMemo(() => ["45%"], []);
-
-  const openMonthPicker = useCallback(() => {
-    bottomSheetRef.current?.expand();
-  }, []);
-
-  const closeMonthPicker = useCallback(() => {
-    bottomSheetRef.current?.close();
-  }, []);
-
-  const selectMonth = (index: number) => {
-    const newDate = setMonth(currentMonth, index);
-
-    setCurrentMonth(newDate);
-    closeMonthPicker();
-  };
-
-  const theme = useColorScheme();
   const {
     calendar: calendarColor,
-    text: textColor,
     primary: primaryColor,
     secondaryText,
     border: borderColor,
@@ -67,7 +66,6 @@ export default function DiaryCalendar() {
     normalDayTextColor,
   } = useThemeColors([
     "calendar",
-    "text",
     "primary",
     "secondaryText",
     "border",
@@ -77,45 +75,6 @@ export default function DiaryCalendar() {
     "normalDayTextColor",
   ]);
 
-  const markedDates = useMemo(() => {
-    const marks: any = {};
-
-    memories.forEach((item) => {
-      if (!item.start_date || !item.end_date) return; // ✅ guard nullable fields
-
-      const start = new Date(item.start_date);
-      const end = new Date(item.end_date);
-      const days = eachDayOfInterval({ start, end });
-
-      days.forEach((day, index) => {
-        const dateString = format(day, "yyyy-MM-dd");
-        const isStart = index === 0;
-        const isEnd = index === days.length - 1;
-
-        marks[dateString] = {
-          startingDay: isStart,
-          endingDay: isEnd,
-          color: "#A7C7E7",
-          textColor: "#000",
-        };
-      });
-    });
-
-    const isInPeriod = !!marks[selectedDate];
-
-    merge(marks, {
-      [selectedDate]: {
-        color: "#2D201B",
-        textColor: "#fff",
-        ...(!isInPeriod && {
-          startingDay: true,
-          endingDay: true,
-        }),
-      },
-    });
-
-    return marks;
-  }, [memories, selectedDate]);
   return (
     <>
       <View
@@ -137,7 +96,6 @@ export default function DiaryCalendar() {
             backgroundColor: "transparent",
           }}
         >
-          {/* LEFT */}
           <View
             style={{
               flexDirection: "row",
@@ -145,7 +103,6 @@ export default function DiaryCalendar() {
               backgroundColor: "transparent",
             }}
           >
-            {/* Calendar Icon */}
             <View
               style={{
                 width: 44,
@@ -160,24 +117,15 @@ export default function DiaryCalendar() {
               <Ionicons name="calendar-outline" size={22} color={iconColor} />
             </View>
 
-            {/* Month Picker */}
             <TouchableOpacity
               onPress={openMonthPicker}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-              }}
+              style={{ flexDirection: "row", alignItems: "center" }}
             >
               <Text
-                style={{
-                  fontSize: 18,
-                  fontWeight: "700",
-                  color: primaryColor,
-                }}
+                style={{ fontSize: 18, fontWeight: "700", color: primaryColor }}
               >
                 {format(currentMonth, "MMMM yyyy")}
               </Text>
-
               <Ionicons
                 name="chevron-down"
                 size={18}
@@ -187,12 +135,8 @@ export default function DiaryCalendar() {
             </TouchableOpacity>
           </View>
 
-          {/* RIGHT NAV */}
           <View
-            style={{
-              flexDirection: "row",
-              backgroundColor: "transparent",
-            }}
+            style={{ flexDirection: "row", backgroundColor: "transparent" }}
           >
             <TouchableOpacity
               onPress={() => setCurrentMonth((prev) => subMonths(prev, 1))}
@@ -205,7 +149,6 @@ export default function DiaryCalendar() {
             >
               <Ionicons name="chevron-back" size={22} color={tint} />
             </TouchableOpacity>
-
             <TouchableOpacity
               onPress={() => setCurrentMonth((prev) => addMonths(prev, 1))}
               style={{
@@ -220,6 +163,7 @@ export default function DiaryCalendar() {
           </View>
         </View>
 
+        {/* Day Names */}
         <View
           style={{
             flexDirection: "row",
@@ -253,25 +197,22 @@ export default function DiaryCalendar() {
           headerStyle={{ display: "none" }}
           onDayPress={(day) => {
             if (navigatingRef.current) return;
-
             navigatingRef.current = true;
-
             setSelectedDate(day.dateString);
-
             router.push({
               pathname: "/tabs/(tabs)/(calendar)/day-detail",
               params: { date: day.dateString },
             });
           }}
-          markedDates={isLoading ? {} : markedDates}
-          markingType={"period"}
+          markedDates={markedDates}
+          markingType="period"
           theme={{
             backgroundColor: calendarColor,
             calendarBackground: calendarColor,
             textSectionTitleColor: secondaryText,
             dayTextColor: normalDayTextColor,
             monthTextColor: primaryColor,
-            todayTextColor: todayTextColor,
+            todayTextColor,
             selectedDayBackgroundColor: tint,
             selectedDayTextColor: "#fff",
             textDisabledColor: secondaryText,
@@ -283,16 +224,13 @@ export default function DiaryCalendar() {
         />
       </View>
 
-      {/* Month Slider */}
+      {/* Month Picker BottomSheet */}
       <BottomSheet
         ref={bottomSheetRef}
         index={-1}
         snapPoints={snapPoints}
         enablePanDownToClose
-        backgroundStyle={{
-          borderTopLeftRadius: 30,
-          borderTopRightRadius: 30,
-        }}
+        backgroundStyle={{ borderTopLeftRadius: 30, borderTopRightRadius: 30 }}
       >
         <BottomSheetScrollView
           showsVerticalScrollIndicator={false}
@@ -307,14 +245,10 @@ export default function DiaryCalendar() {
               <TouchableOpacity
                 key={item}
                 onPress={() => selectMonth(index)}
-                className={`py-4 px-5 rounded-2xl mb-2 ${
-                  selected ? "bg-[#F2E2D5]" : "bg-[#F7F4F2]"
-                }`}
+                className={`py-4 px-5 rounded-2xl mb-2 ${selected ? "bg-[#F2E2D5]" : "bg-[#F7F4F2]"}`}
               >
                 <Text
-                  className={`text-[18px] ${
-                    selected ? "font-semibold text-[#2D201B]" : "text-[#7D6E65]"
-                  }`}
+                  className={`text-[18px] ${selected ? "font-semibold text-[#2D201B]" : "text-[#7D6E65]"}`}
                 >
                   {item}
                 </Text>

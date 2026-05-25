@@ -87,11 +87,11 @@ export const getMemories = async (
   currentMonth: Date,
 ): Promise<MemoryEntry[]> => {
   const visibleStart = startOfWeek(startOfMonth(currentMonth), {
-    weekStartsOn: 1, // Monday
+    weekStartsOn: 1,
   });
 
   const visibleEnd = endOfWeek(endOfMonth(currentMonth), {
-    weekStartsOn: 1, // Monday
+    weekStartsOn: 1,
   });
 
   const startDate = format(visibleStart, "yyyy-MM-dd");
