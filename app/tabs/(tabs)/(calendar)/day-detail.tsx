@@ -108,7 +108,13 @@ export default function DayDetailScreen() {
         }}
       >
         <TouchableOpacity
-          onPress={() => router.back()}
+          onPress={() => {
+            if (router.canGoBack()) {
+              router.back();
+            } else {
+              router.replace("/tabs/(tabs)/home");
+            }
+          }}
           style={{
             flexDirection: "row",
             alignItems: "center",

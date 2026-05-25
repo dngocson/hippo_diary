@@ -3,8 +3,23 @@
  * API service cho memories - những kỷ niệm liên kết với diary entries
  */
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/app/libs/supabase";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  keepPreviousData,
+} from "@tanstack/react-query";
+import {
+  addMonths,
+  endOfMonth,
+  endOfWeek,
+  format,
+  startOfMonth,
+  startOfWeek,
+  subMonths,
+} from "date-fns";
+import { useEffect } from "react";
 
 // ==================== Types ====================
 
@@ -38,10 +53,17 @@ export interface UpdateMemoryInput extends Partial<CreateMemoryInput> {
 export const MEMORY_QUERY_KEYS = {
   memories: {
     all: ["memories"] as const,
+
     lists: () => [...MEMORY_QUERY_KEYS.memories.all, "list"] as const,
+
+    listByMonth: (monthKey: string) =>
+      [...MEMORY_QUERY_KEYS.memories.lists(), monthKey] as const,
+
     details: () => [...MEMORY_QUERY_KEYS.memories.all, "detail"] as const,
+
     detail: (id: string) =>
       [...MEMORY_QUERY_KEYS.memories.details(), id] as const,
+
     byDiary: (diaryId: string) =>
       [...MEMORY_QUERY_KEYS.memories.all, "diary", diaryId] as const,
   },
@@ -50,15 +72,43 @@ export const MEMORY_QUERY_KEYS = {
 // ==================== API Functions ====================
 
 /**
- * Lấy tất cả memories
+ * Lấy memories overlap với tháng calendar đang hiển thị
+ *
+ * Example:
+ * Calendar visible:
+ * 2026-04-27 → 2026-05-31
+ *
+ * Memory:
+ * 2026-04-25 → 2026-05-10 ✅
+ * 2026-05-20 → 2026-06-10 ✅
+ * 2026-03-01 → 2026-04-10 ❌
  */
-export const getMemories = async (): Promise<MemoryEntry[]> => {
+export const getMemories = async (
+  currentMonth: Date,
+): Promise<MemoryEntry[]> => {
+  const visibleStart = startOfWeek(startOfMonth(currentMonth), {
+    weekStartsOn: 1, // Monday
+  });
+
+  const visibleEnd = endOfWeek(endOfMonth(currentMonth), {
+    weekStartsOn: 1, // Monday
+  });
+
+  const startDate = format(visibleStart, "yyyy-MM-dd");
+
+  const endDate = format(visibleEnd, "yyyy-MM-dd");
+
   const { data, error } = await supabase
     .from("memories")
     .select("*")
-    .order("created_at", { ascending: false });
+    .lte("start_date", endDate)
+    .gte("end_date", startDate)
+    .order("start_date", {
+      ascending: true,
+    });
 
   if (error) throw error;
+
   return data || [];
 };
 
@@ -75,6 +125,7 @@ export const getMemoryById = async (
     .single();
 
   if (error) throw error;
+
   return data;
 };
 
@@ -88,9 +139,12 @@ export const getMemoriesByDiary = async (
     .from("memories")
     .select("*")
     .eq("diary_id", diaryId)
-    .order("created_at", { ascending: false });
+    .order("created_at", {
+      ascending: false,
+    });
 
   if (error) throw error;
+
   return data || [];
 };
 
@@ -104,9 +158,12 @@ export const searchMemories = async (
     .from("memories")
     .select("*")
     .or(`title.ilike.%${keyword}%,content.ilike.%${keyword}%`)
-    .order("created_at", { ascending: false });
+    .order("created_at", {
+      ascending: false,
+    });
 
   if (error) throw error;
+
   return data || [];
 };
 
@@ -123,6 +180,7 @@ export const createMemory = async (
     .single();
 
   if (error) throw error;
+
   return data;
 };
 
@@ -142,6 +200,7 @@ export const updateMemory = async (
     .single();
 
   if (error) throw error;
+
   return data;
 };
 
@@ -157,12 +216,36 @@ export const deleteMemory = async (id: string): Promise<void> => {
 // ==================== React Query Hooks ====================
 
 /**
- * Hook lấy danh sách memories
+ * Hook lấy memories theo tháng calendar
  */
-export const useMemories = () => {
+export const useMemories = (currentMonth: Date) => {
+  const monthKey = format(currentMonth, "yyyy-MM");
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const monthsToPreload = [
+      subMonths(currentMonth, 2),
+      subMonths(currentMonth, 1),
+      addMonths(currentMonth, 1),
+      addMonths(currentMonth, 2),
+    ];
+
+    monthsToPreload.forEach((month) => {
+      const key = format(month, "yyyy-MM");
+      queryClient.prefetchQuery({
+        queryKey: MEMORY_QUERY_KEYS.memories.listByMonth(key),
+        queryFn: () => getMemories(month),
+        staleTime: 1000 * 60 * 5,
+      });
+    });
+  }, [monthKey, queryClient]);
+
   return useQuery({
-    queryKey: MEMORY_QUERY_KEYS.memories.lists(),
-    queryFn: getMemories,
+    queryKey: MEMORY_QUERY_KEYS.memories.listByMonth(monthKey),
+
+    queryFn: () => getMemories(currentMonth),
+    staleTime: 1000 * 60 * 5,
+    placeholderData: keepPreviousData,
   });
 };
 
@@ -172,7 +255,9 @@ export const useMemories = () => {
 export const useMemory = (id: string) => {
   return useQuery({
     queryKey: MEMORY_QUERY_KEYS.memories.detail(id),
+
     queryFn: () => getMemoryById(id),
+
     enabled: !!id,
   });
 };
@@ -183,7 +268,9 @@ export const useMemory = (id: string) => {
 export const useMemoriesByDiary = (diaryId: string) => {
   return useQuery({
     queryKey: MEMORY_QUERY_KEYS.memories.byDiary(diaryId),
+
     queryFn: () => getMemoriesByDiary(diaryId),
+
     enabled: !!diaryId,
   });
 };
@@ -194,7 +281,9 @@ export const useMemoriesByDiary = (diaryId: string) => {
 export const useSearchMemories = (keyword: string) => {
   return useQuery({
     queryKey: [...MEMORY_QUERY_KEYS.memories.all, "search", keyword] as const,
+
     queryFn: () => searchMemories(keyword),
+
     enabled: keyword.length >= 2,
   });
 };
@@ -207,10 +296,12 @@ export const useCreateMemory = () => {
 
   return useMutation({
     mutationFn: createMemory,
+
     onSuccess: (newMemory) => {
       queryClient.invalidateQueries({
-        queryKey: MEMORY_QUERY_KEYS.memories.lists(),
+        queryKey: MEMORY_QUERY_KEYS.memories.all,
       });
+
       queryClient.invalidateQueries({
         queryKey: MEMORY_QUERY_KEYS.memories.byDiary(newMemory.diary_id),
       });
@@ -226,13 +317,16 @@ export const useUpdateMemory = () => {
 
   return useMutation({
     mutationFn: updateMemory,
+
     onSuccess: (updatedMemory) => {
       queryClient.invalidateQueries({
-        queryKey: MEMORY_QUERY_KEYS.memories.lists(),
+        queryKey: MEMORY_QUERY_KEYS.memories.all,
       });
+
       queryClient.invalidateQueries({
         queryKey: MEMORY_QUERY_KEYS.memories.detail(updatedMemory.id),
       });
+
       queryClient.invalidateQueries({
         queryKey: MEMORY_QUERY_KEYS.memories.byDiary(updatedMemory.diary_id),
       });
@@ -248,9 +342,10 @@ export const useDeleteMemory = () => {
 
   return useMutation({
     mutationFn: deleteMemory,
+
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: MEMORY_QUERY_KEYS.memories.lists(),
+        queryKey: MEMORY_QUERY_KEYS.memories.all,
       });
     },
   });

@@ -1,34 +1,37 @@
-import React, {
-  useMemo,
-  useRef,
-  useState,
-  useCallback,
-  useEffect,
-} from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  useColorScheme,
-  ScrollView,
-} from "react-native";
+import React, { useCallback, useMemo, useRef, useState } from "react";
+import { Text, TouchableOpacity, useColorScheme, View } from "react-native";
 import { Calendar } from "react-native-calendars";
 
 import { Ionicons } from "@expo/vector-icons";
+import merge from "lodash/merge";
 
-import { addMonths, subMonths, format, setMonth } from "date-fns";
-import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet";
-import { useThemeColors } from "../Themed";
 import { dayNames, monthNames } from "@/constants/Variable";
+import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet";
+import {
+  addMonths,
+  format,
+  setMonth,
+  subMonths,
+  eachDayOfInterval,
+} from "date-fns";
 import { useRouter } from "expo-router";
-import { useMemories, useMemory } from "@/app/services/supabaseMemoryService";
-import supabase from "@/app/libs/supabase";
+import { useThemeColors } from "../Themed";
+import { useFocusEffect } from "expo-router";
+import { useMemories } from "@/app/services/supabaseMemoryService";
 
 export default function DiaryCalendar() {
   const router = useRouter();
   const bottomSheetRef = useRef<BottomSheet>(null);
+  const navigatingRef = useRef(false);
 
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const { data: memories = [], isLoading } = useMemories(currentMonth);
+
+  useFocusEffect(
+    useCallback(() => {
+      navigatingRef.current = false;
+    }, []),
+  );
 
   const [selectedDate, setSelectedDate] = useState(
     format(new Date(), "yyyy-MM-dd"),
@@ -74,24 +77,45 @@ export default function DiaryCalendar() {
     "normalDayTextColor",
   ]);
 
-  // useEffect(() => {
-  //   const test = async () => {
-  //     try {
-  //       const response = await fetch("https://fakestoreapi.com/products");
+  const markedDates = useMemo(() => {
+    const marks: any = {};
 
-  //       const data = await response.json();
+    memories.forEach((item) => {
+      if (!item.start_date || !item.end_date) return; // ✅ guard nullable fields
 
-  //       console.log("SUCCESS:", data);
-  //     } catch (e) {
-  //       console.log("FAILED:", e);
-  //     }
-  //   };
+      const start = new Date(item.start_date);
+      const end = new Date(item.end_date);
+      const days = eachDayOfInterval({ start, end });
 
-  //   test();
-  // }, [currentMonth]);
+      days.forEach((day, index) => {
+        const dateString = format(day, "yyyy-MM-dd");
+        const isStart = index === 0;
+        const isEnd = index === days.length - 1;
 
-  const data = useMemory("b4444444-4444-4444-4444-444444444444");
-  console.log("MEMORIES:", data);
+        marks[dateString] = {
+          startingDay: isStart,
+          endingDay: isEnd,
+          color: "#A7C7E7",
+          textColor: "#000",
+        };
+      });
+    });
+
+    const isInPeriod = !!marks[selectedDate];
+
+    merge(marks, {
+      [selectedDate]: {
+        color: "#2D201B",
+        textColor: "#fff",
+        ...(!isInPeriod && {
+          startingDay: true,
+          endingDay: true,
+        }),
+      },
+    });
+
+    return marks;
+  }, [memories, selectedDate]);
   return (
     <>
       <View
@@ -228,20 +252,19 @@ export default function DiaryCalendar() {
           firstDay={1}
           headerStyle={{ display: "none" }}
           onDayPress={(day) => {
+            if (navigatingRef.current) return;
+
+            navigatingRef.current = true;
+
             setSelectedDate(day.dateString);
+
             router.push({
               pathname: "/tabs/(tabs)/(calendar)/day-detail",
               params: { date: day.dateString },
             });
           }}
+          markedDates={isLoading ? {} : markedDates}
           markingType={"period"}
-          markedDates={{
-            [selectedDate]: {
-              selected: true,
-              color: textColor,
-              textColor: "white",
-            },
-          }}
           theme={{
             backgroundColor: calendarColor,
             calendarBackground: calendarColor,
